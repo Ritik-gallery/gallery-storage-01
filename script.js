@@ -16,16 +16,16 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
 });
 
 async function uploadFileToGitHub(file) {
-    const repo = 'Ritik-gallery/gallery-storage-01'; // Replace with your repository name
+    const repo = 'Ritik-gallery/gallery-storage-01'; // Your repository
     const path = `images/${file.name}`; // Store images in an 'images' folder
-    const branch = 'main'; // Replace with your branch name
+    const branch = 'main'; // Your branch name
 
     const base64Content = await fileToBase64(file);
 
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
         method: 'PUT',
         headers: {
-            'Authorization': `Bearer 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`, // Replace with your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -35,30 +35,33 @@ async function uploadFileToGitHub(file) {
         })
     });
 
-    if (response.ok) {
-        console.log(`${file.name} uploaded successfully`);
-    } else {
+    if (!response.ok) {
         console.error(`Failed to upload ${file.name}`, await response.json());
+    } else {
+        console.log(`${file.name} uploaded successfully`);
     }
 }
 
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.onloadend = () => {
+            const base64String = reader.result.split(',')[1];
+            resolve(base64String);
+        };
         reader.onerror = reject;
         reader.readAsDataURL(file);
     });
 }
 
 async function loadGallery() {
-    const repo = 'Ritik-gallery/gallery-storage-01'; // Replace with your repository name
+    const repo = 'Ritik-gallery/gallery-storage-01'; // Your repository
     const path = 'images'; // Folder where images are stored
-    const branch = 'main'; // Replace with your branch name
+    const branch = 'main'; // Your branch name
 
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
         headers: {
-            'Authorization': `Bearer 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`, // Replace with your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
         }
     });
 
@@ -69,26 +72,96 @@ async function loadGallery() {
 
     files.forEach(file => {
         if (file.type === 'file' && file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
+            const anchor = document.createElement('a');
+            anchor.href = file.download_url;
+            anchor.dataset.lightbox = 'gallery';
+            anchor.dataset.title = file.name;
+
             const img = document.createElement('img');
             img.src = file.download_url;
             img.alt = file.name;
 
-            const galleryItem = document.createElement('div');
-            galleryItem.classList.add('gallery-item');
-            galleryItem.appendChild(img);
+            anchor.appendChild(img);
+            gallery.appendChild(anchor);
 
-            const downloadBtn = document.createElement('button');
-            downloadBtn.classList.add('download-btn');
-            downloadBtn.textContent = 'Download';
-            downloadBtn.addEventListener('click', () => {
-                window.open(file.download_url);
-            });
-
-            galleryItem.appendChild(downloadBtn);
-            gallery.appendChild(galleryItem);
+            // Set the data-filename attribute to the anchor tag for the delete functionality
+            anchor.setAttribute('data-filename', file.name);
         }
     });
 }
 
-// Load the gallery on page load
-window.onload = loadGallery;
+async function getFileSHA(repo, path, branch) {
+    const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
+        headers: {
+            'Authorization': `Bearer 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`, // Your GitHub token
+        }
+    });
+
+    if (!response.ok) {
+        console.error(`Failed to fetch SHA for ${path}`, await response.json());
+        return null;
+    }
+
+    const fileData = await response.json();
+    return fileData.sha;
+}
+
+async function deleteFileFromGitHub(fileName) {
+    const repo = 'Ritik-gallery/gallery-storage-01'; // Your repository
+    const path = `images/${fileName}`; // Path to the file
+    const branch = 'main'; // Your branch name
+
+    const sha = await getFileSHA(repo, path, branch);
+    if (!sha) {
+        alert('Failed to retrieve file SHA. Cannot delete the file.');
+        return;
+    }
+
+    const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer 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`, // Your GitHub token
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: `Delete ${fileName}`,
+            sha: sha,
+            branch: branch
+        })
+    });
+
+    if (!response.ok) {
+        console.error(`Failed to delete ${fileName}`, await response.json());
+    } else {
+        console.log(`${fileName} deleted successfully`);
+        loadGallery(); // Reload the gallery after deletion
+    }
+}
+
+// Show delete button on image open
+document.addEventListener('DOMContentLoaded', function() {
+    // Listen for Lightbox events
+    document.addEventListener('click', function(event) {
+        if (event.target && event.target.matches('[data-lightbox]')) {
+            // Show delete button
+            const deleteButton = document.getElementById('deleteButton');
+            const fileName = event.target.closest('a').getAttribute('data-filename');
+            deleteButton.style.display = 'block';
+            deleteButton.onclick = function() {
+                deleteFileFromGitHub(fileName);
+                lightbox.close();
+            };
+        }
+    });
+
+    // Hide delete button when clicking outside the image
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('[data-lightbox]')) {
+            const deleteButton = document.getElementById('deleteButton');
+            deleteButton.style.display = 'none';
+        }
+    });
+
+    // Load the gallery on page load
+    loadGallery();
+});
