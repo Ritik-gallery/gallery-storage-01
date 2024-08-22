@@ -25,7 +25,7 @@ async function uploadFileToGitHub(file) {
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
         method: 'PUT',
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -37,9 +37,10 @@ async function uploadFileToGitHub(file) {
 
     if (!response.ok) {
         console.error(`Failed to upload ${file.name}`, await response.json());
-    } else {
-        console.log(`${file.name} uploaded successfully`);
+        return;
     }
+
+    console.log(`${file.name} uploaded successfully`);
 }
 
 function fileToBase64(file) {
@@ -61,7 +62,7 @@ async function loadGallery() {
 
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
         }
     });
 
@@ -93,7 +94,7 @@ async function loadGallery() {
 async function getFileSHA(repo, path, branch) {
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
         }
     });
 
@@ -120,7 +121,7 @@ async function deleteFileFromGitHub(fileName) {
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
         method: 'DELETE',
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
