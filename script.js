@@ -25,7 +25,7 @@ async function uploadFileToGitHub(file) {
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
         method: 'PUT',
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -62,7 +62,7 @@ async function loadGallery() {
 
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
         }
     });
 
@@ -94,7 +94,7 @@ async function loadGallery() {
 async function getFileSHA(repo, path, branch) {
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
         }
     });
 
@@ -121,7 +121,7 @@ async function deleteFileFromGitHub(fileName) {
     const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
         method: 'DELETE',
         headers: {
-            'Authorization': `Bearer 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`, // Your GitHub token
+            'Authorization': `Bearer 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`, // Your GitHub token
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
